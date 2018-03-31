@@ -31,23 +31,33 @@ function main() {
       gl_FragColor = vColor;
     }
   `;
-  const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
-  const programInfo = {
-    program: shaderProgram,
-    attribLocations: {
-      vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-      vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
-    },
-    uniformLocations: {
-      projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-      modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
-    },
-  };
-  buffers = []
-  tunnelObj = tunnelConstructor(100);
+  const fsSource2 = `
+  varying lowp vec4 vColor;
+  precision lowp float;
+  void main(void) {
+  	float gray = dot(vColor.rgb, vec3(0.299, 0.587, 0.114));
+  	gl_FragColor = vec4(vec3(gray), 1.0);
+  }
+  `;
+  buffers = [];
+  tunnelObj = tunnelConstructor(1000);
+  obsObj = obsConstructor(10);
   buffers.push(initBuffers(gl, tunnelObj));
+  buffers.push(initBuffers(gl, obsObj));
   var then = 0;
   function render(now) {
+    const shaderProgram = initShaderProgram(gl, vsSource, fsSource2);
+    const programInfo = {
+      program: shaderProgram,
+      attribLocations: {
+        vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
+        vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
+      },
+      uniformLocations: {
+        projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
+        modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
+      },
+    };
     now *= 0.001;
     const deltaTime = now - then;
     then = now;
@@ -87,7 +97,6 @@ function drawScene(gl, programInfo, buffers, deltaTime) {
   gl.clearDepth(1.0);
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
-
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   const fieldOfView = 45 * Math.PI / 180;   // in radians
   const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
@@ -144,8 +153,7 @@ function drawScene(gl, programInfo, buffers, deltaTime) {
           normalize,
           stride,
           offset);
-      gl.enableVertexAttribArray(
-          programInfo.attribLocations.vertexColor);
+      gl.enableVertexAttribArray(programInfo.attribLocations.vertexColor);
     }
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers[i].indices);
     gl.useProgram(programInfo.program);
