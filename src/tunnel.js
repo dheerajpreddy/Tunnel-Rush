@@ -62,23 +62,50 @@ function tunnelConstructor(n) {
     }
   }
 
-  obj.faceColors = [
-    [1.0,  1.0,  1.0,  1.0],    // Front face: white
-    [1.0,  0.0,  0.0,  1.0],    // Back face: red
-    [0.0,  1.0,  0.0,  1.0],    // Top face: green
-    [0.0,  0.0,  1.0,  1.0],    // Bottom face: blue
-    [1.0,  1.0,  0.0,  1.0],    // Right face: yellow
-    [1.0,  0.0,  1.0,  1.0],    // Left face: purple
-    [1.0,  0.8,  1.0,  1.0],    // Left face: purple
-    [0.3,  0.8,  1.0,  1.0],    // Left face: purple
-  ];
-
-  obj.colors = [];
-  for (var i = 0; i < obj.num; i++) {
-    for (var j = 0; j < obj.faceColors.length; ++j) {
-      const c = obj.faceColors[(j + Math.floor(Math.random() * 8)) % 8];
-      obj.colors = obj.colors.concat(c, c, c, c);
-    }
+  obj.textureCoordinates = [];
+  for(var i=0; i<obj.num; i++) {
+     obj.textureCoordinates.push(
+      // Front
+      0.0,  0.0,
+      1.0,  0.0,
+      1.0,  1.0,
+      0.0,  1.0,
+      // Back
+      0.0,  0.0,
+      1.0,  0.0,
+      1.0,  1.0,
+      0.0,  1.0,
+      // Top
+      0.0,  0.0,
+      1.0,  0.0,
+      1.0,  1.0,
+      0.0,  1.0,
+      // Bottom
+      0.0,  0.0,
+      1.0,  0.0,
+      1.0,  1.0,
+      0.0,  1.0,
+      // Right
+      0.0,  0.0,
+      1.0,  0.0,
+      1.0,  1.0,
+      0.0,  1.0,
+      // Left
+      0.0,  0.0,
+      1.0,  0.0,
+      1.0,  1.0,
+      0.0,  1.0,
+      // l2
+      0.0,  0.0,
+      1.0,  0.0,
+      1.0,  1.0,
+      0.0,  1.0,
+      // l3
+      0.0,  0.0,
+      1.0,  0.0,
+      1.0,  1.0,
+      0.0,  1.0,
+    );
   }
   return obj;
 }

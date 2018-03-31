@@ -20,54 +20,14 @@ function obsConstructor(n) {
         )
     }
   }
-  var c = [1.0, 0.0, 0.0, 0.7];
-  var colors = [];
-  for (var i = 0; i < obj.num; i++) {
-    colors = colors.concat(c, c, c, c);
-  }
   var indices = [];
   for (var i = 0; i < obj.num; i++) {
     indices.push(4*i, 4*i + 1, 4*i + 2, 4*i, 4*i + 2, 4*i + 3);
   }
   obj.textureCoordinates = [];
-  for (var i=0; i<4800; i++){
+  for (var i=0; i<obj.num; i++){
     obj.textureCoordinates.push(
       // Front
-      0.0,  0.0,
-      1.0,  0.0,
-      1.0,  1.0,
-      0.0,  1.0,
-      // Back
-      0.0,  0.0,
-      1.0,  0.0,
-      1.0,  1.0,
-      0.0,  1.0,
-      // Top
-      0.0,  0.0,
-      1.0,  0.0,
-      1.0,  1.0,
-      0.0,  1.0,
-      // Bottom
-      0.0,  0.0,
-      1.0,  0.0,
-      1.0,  1.0,
-      0.0,  1.0,
-      // Right
-      0.0,  0.0,
-      1.0,  0.0,
-      1.0,  1.0,
-      0.0,  1.0,
-      // Left
-      0.0,  0.0,
-      1.0,  0.0,
-      1.0,  1.0,
-      0.0,  1.0,
-      // l
-      0.0,  0.0,
-      1.0,  0.0,
-      1.0,  1.0,
-      0.0,  1.0,
-      // l2
       0.0,  0.0,
       1.0,  0.0,
       1.0,  1.0,
@@ -76,7 +36,6 @@ function obsConstructor(n) {
   }
 
   obj.positions = positions;
-  obj.colors = colors;
   obj.indices = indices;
   return obj;
 }
