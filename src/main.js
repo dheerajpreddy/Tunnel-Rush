@@ -9,10 +9,14 @@ main();
 //
 function main() {
   isGrey = 0;
+  isRick = false;
   window.onkeydown = function(e) {
      var key = e.keyCode ? e.keyCode : e.which;
      if (key == 71) {
          isGrey = !isGrey;
+     }
+     if (key == 82) {
+       isRick = !isRick;
      }
      if (key == 37) {
        // left
@@ -61,9 +65,13 @@ function main() {
     varying highp vec2 vTextureCoord;
     uniform highp float vColor;
     uniform sampler2D uSampler;
-
+    uniform int grFlag;
     void main(void) {
       gl_FragColor = texture2D(uSampler, vTextureCoord) * vColor;
+      if(grFlag!=0) {
+        lowp float gray = (0.2*gl_FragColor.r+0.7*gl_FragColor.g+0.07*gl_FragColor.b);
+        gl_FragColor = vec4(gray, gray, gray, 1.0);
+      }
     }
   `;
 
@@ -85,6 +93,7 @@ function main() {
       modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
       uSampler: gl.getUniformLocation(shaderProgram, 'uSampler'),
       vColor: gl.getUniformLocation(shaderProgram, 'vColor'),
+      grFlag: gl.getUniformLocation(shaderProgram, 'grFlag'),
     },
   };
 
@@ -95,8 +104,9 @@ function main() {
   obsObj = obsConstructor(100);
   buffers.push(initBuffers(gl, tunnelObj));
   buffers.push(initBuffers(gl, obsObj));
-  const regular_texture = loadTexture(gl, 'assets/texture1.png');
+  const regular_texture = loadTexture(gl, 'assets/morty.png');
   const grey_texture = loadTexture(gl, 'assets/texture2.png');
+  const rick_texture = loadTexture(gl, 'assets/rick.png');
   var then = 0;
   // Draw the scene repeatedly
   function render(now) {
@@ -117,15 +127,19 @@ function main() {
     if(!isFlash && flashVal>0.7) {
       flashVal -= 0.01;
     }
-    // console.log(then);
     if(cam_position[2]>138) {
       cam_position[2] = 0.0;
     }
     gl.uniform1f(programInfo.uniformLocations.vColor, flashVal)
     if(!isGrey) {
-      drawScene(gl, programInfo, buffers, regular_texture, deltaTime);
+      gl.uniform1i(programInfo.uniformLocations.grFlag, 0);
     } else {
-      drawScene(gl, programInfo, buffers, grey_texture, deltaTime);
+      gl.uniform1i(programInfo.uniformLocations.grFlag, 1);
+    }
+    if(isRick) {
+      drawScene(gl, programInfo, buffers, rick_texture, deltaTime);
+    } else {
+      drawScene(gl, programInfo, buffers, regular_texture, deltaTime);
     }
     requestAnimationFrame(render);
   }
@@ -215,7 +229,8 @@ function loadTexture(gl, url) {
   gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
                 width, height, border, srcFormat, srcType,
                 pixel);
-
+  var audio = new Audio('assets/background.m4a');
+  audio.play();
   const image = new Image();
   image.onload = function() {
     gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -250,7 +265,6 @@ function isPowerOf2(value) {
 //
 function drawScene(gl, programInfo, buffers, texture, deltaTime) {
   cam_position[2] += 0.1;
-  console.log(cam_position[1]);
   if(isJump) {
     cam_position[1] -= 0.05;
   }
@@ -268,7 +282,6 @@ function drawScene(gl, programInfo, buffers, texture, deltaTime) {
   // Clear the canvas before we start drawing on it.
 
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  // console.log(buffers);
   // Create a perspective matrix, a special matrix that is
   // used to simulate the distortion of perspective in a camera.
   // Our field of view is 45 degrees, with a width/height
@@ -296,7 +309,7 @@ function drawScene(gl, programInfo, buffers, texture, deltaTime) {
 
   // Now move the drawing position a bit to where we want to
   // start drawing the square.
-
+  var angle =    performance.now() * Math.PI / 180;
   mat4.translate(modelViewMatrix,     // destination matrix
                  modelViewMatrix,     // matrix to translate
                  cam_position);  // amount to translate
@@ -314,6 +327,12 @@ function drawScene(gl, programInfo, buffers, texture, deltaTime) {
   // buffersArr = [];
   // buffersArr.push(buffers);
   for(var k = 0; k< buffers.length; k++) {
+    if(k==1) {
+      mat4.rotate(modelViewMatrix,  // destination matrix
+                  modelViewMatrix,  // matrix to rotate
+                  angle / 10,// amount to rotate in radians
+                  [0, 0, 1]);       // axis to rotate around (X)
+    }
     {
       const numComponents = 3;
       const type = gl.FLOAT;
