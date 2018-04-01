@@ -1,6 +1,7 @@
 var cubeRotation = 0.0;
-var cam_position = 0.0;
-
+var cam_position = [0.0, 1.0, 0.0];
+var rotateZ = 0.0;
+var isJump = false;
 main();
 
 //
@@ -8,10 +9,22 @@ main();
 //
 function main() {
   isGrey = 0;
-  window.onkeyup = function(e) {
+  window.onkeydown = function(e) {
      var key = e.keyCode ? e.keyCode : e.which;
      if (key == 71) {
          isGrey = !isGrey;
+     }
+     if (key == 37) {
+       // left
+         rotateZ += 0.1;
+     }
+     if (key == 39) {
+       // right
+         rotateZ -= 0.1;
+     }
+     if (key == 38) {
+       // up
+         isJump = true;
      }
   }
   const canvas = document.querySelector('#glcanvas');
@@ -90,7 +103,10 @@ function main() {
     now *= 0.001;  // convert to seconds
     const deltaTime = now - then;
     then = now;
-    if(then>5 && then <5.5) {
+    if(then>5 && then <5.5 || then>10 && then<10.5 || then>15 && then<15.5
+        || then>20 && then<20.5 || then>25 && then<25.5 || then>30 && then<30.5
+        || then>35 && then<35.5 || then>40 && then<40.5 || then>45 && then<45.5
+        ) {
       isFlash = 1;
     } else {
       isFlash = 0;
@@ -102,10 +118,8 @@ function main() {
       flashVal -= 0.01;
     }
     // console.log(then);
-    if(cam_position>138) {
-      // cam_position = 0.0;
-      // console.log(cam_position);
-      cam_position = 0.0;
+    if(cam_position[2]>138) {
+      cam_position[2] = 0.0;
     }
     gl.uniform1f(programInfo.uniformLocations.vColor, flashVal)
     if(!isGrey) {
@@ -235,7 +249,17 @@ function isPowerOf2(value) {
 // Draw the scene.
 //
 function drawScene(gl, programInfo, buffers, texture, deltaTime) {
-  cam_position += 0.1;
+  cam_position[2] += 0.1;
+  console.log(cam_position[1]);
+  if(isJump) {
+    cam_position[1] -= 0.05;
+  }
+  if(cam_position[1]<=0.0) {
+    isJump = false;
+  }
+  if(cam_position[1]<1.0 && !isJump) {
+    cam_position[1] += 0.05;
+  }
   gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
   gl.clearDepth(1.0);                 // Clear everything
   gl.enable(gl.DEPTH_TEST);           // Enable depth testing
@@ -275,11 +299,11 @@ function drawScene(gl, programInfo, buffers, texture, deltaTime) {
 
   mat4.translate(modelViewMatrix,     // destination matrix
                  modelViewMatrix,     // matrix to translate
-                 [-0.0, 0.0, cam_position]);  // amount to translate
+                 cam_position);  // amount to translate
   mat4.rotate(modelViewMatrix,  // destination matrix
               modelViewMatrix,  // matrix to rotate
-              cubeRotation,     // amount to rotate in radians
-              [0, 0, 0]);       // axis to rotate around (Z)
+              rotateZ,     // amount to rotate in radians
+              [0, 0, 1]);       // axis to rotate around (Z)
   mat4.rotate(modelViewMatrix,  // destination matrix
               modelViewMatrix,  // matrix to rotate
               cubeRotation * .7,// amount to rotate in radians
@@ -368,10 +392,6 @@ function drawScene(gl, programInfo, buffers, texture, deltaTime) {
     }
   }
 
-
-  // Update the rotation for the next draw
-
-  cubeRotation += deltaTime;
 }
 
 //
