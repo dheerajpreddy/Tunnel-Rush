@@ -3,22 +3,12 @@ function obsConstructor(n) {
   obj.num = n;
   var positions = [];
   for (var i = 0; i < obj.num; i++) {
-    if (i % 2 == 0) {
       positions.push(
-          1.4,  0.0,  0.5-20*i,
-          1.0,  1.0,  0.5-20*i,
-         -1.4,  0.0,  0.5-20*i,
-         -1.0, -1.0,  0.5-20*i,
+          5,  0.0,  0.5-20*i,
+          5,  1.0,  0.5-20*i,
+         -5,  0.0,  0.5-20*i,
+         -5, -1.0,  0.5-20*i,
         )
-    }
-    else if (i % 2 == 1) {
-      positions.push(
-         -1.4,  0.0,  0.5-20*i,
-         -1.0, -1.0,  0.5-20*i,
-          1.0, -1.0,  0.5-20*i,
-          1.4,  0.0,  0.5-20*i,
-        )
-    }
   }
   var indices = [];
   for (var i = 0; i < obj.num; i++) {

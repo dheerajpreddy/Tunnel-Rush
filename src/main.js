@@ -2,6 +2,10 @@ var cubeRotation = 0.0;
 var cam_position = [0.0, 1.0, 0.0];
 var rotateZ = 0.0;
 var isJump = false;
+var level = 1;
+var speedZ = 0.1;
+var obsRotation = 0.0;
+
 main();
 
 //
@@ -99,17 +103,21 @@ function main() {
 
   // Here's where we call the routine that builds all the
   // objects we'll be drawing.
+  scoreTag = document.getElementById('score');
+  titleTag = document.getElementsByTagName('title')[0];
   var buffers = [];
   tunnelObj = tunnelConstructor(100);
   obsObj = obsConstructor(100);
   buffers.push(initBuffers(gl, tunnelObj));
   buffers.push(initBuffers(gl, obsObj));
   const regular_texture = loadTexture(gl, 'assets/morty.png');
-  const grey_texture = loadTexture(gl, 'assets/texture2.png');
   const rick_texture = loadTexture(gl, 'assets/rick.png');
   var then = 0;
   // Draw the scene repeatedly
   function render(now) {
+    if(collisionDetection(obsObj)) {
+      return;
+    }
     now *= 0.001;  // convert to seconds
     const deltaTime = now - then;
     then = now;
@@ -141,6 +149,23 @@ function main() {
     } else {
       drawScene(gl, programInfo, buffers, regular_texture, deltaTime);
     }
+    scoreTag.innerHTML = Math.round(then);
+    titleTag.innerHTML = "Tunnel Rush " + "Level " + level.toString();
+    if(Math.round(then)>=10 && Math.round(then)<20) {
+      level = 2;
+      speedZ = 0.2;
+    } else if(Math.round(then)>=20 && Math.round(then)<30) {
+      level = 3;
+      speedZ = 0.4;
+    } else if(Math.round(then)>=30 && Math.round(then)<40) {
+      level = 4;
+      speedZ = 0.6;
+    } else if(Math.round(then)>40) {
+      level = 5;
+      speedZ = 0.1;
+      cam_position[1] = -1.5;
+    }
+    // console.log(speedZ);
     requestAnimationFrame(render);
   }
   requestAnimationFrame(render);
@@ -230,6 +255,7 @@ function loadTexture(gl, url) {
                 width, height, border, srcFormat, srcType,
                 pixel);
   var audio = new Audio('assets/background.m4a');
+  audio.loop = true;
   audio.play();
   const image = new Image();
   image.onload = function() {
@@ -264,7 +290,7 @@ function isPowerOf2(value) {
 // Draw the scene.
 //
 function drawScene(gl, programInfo, buffers, texture, deltaTime) {
-  cam_position[2] += 0.1;
+  cam_position[2] += speedZ;
   if(isJump) {
     cam_position[1] -= 0.05;
   }
@@ -309,7 +335,8 @@ function drawScene(gl, programInfo, buffers, texture, deltaTime) {
 
   // Now move the drawing position a bit to where we want to
   // start drawing the square.
-  var angle =    performance.now() * Math.PI / 180;
+  obsRotation =    performance.now() * Math.PI / 180;
+  obsRotation /= 10;
   mat4.translate(modelViewMatrix,     // destination matrix
                  modelViewMatrix,     // matrix to translate
                  cam_position);  // amount to translate
@@ -330,7 +357,7 @@ function drawScene(gl, programInfo, buffers, texture, deltaTime) {
     if(k==1) {
       mat4.rotate(modelViewMatrix,  // destination matrix
                   modelViewMatrix,  // matrix to rotate
-                  angle / 10,// amount to rotate in radians
+                  obsRotation,// amount to rotate in radians
                   [0, 0, 1]);       // axis to rotate around (X)
     }
     {
@@ -461,4 +488,14 @@ function loadShader(gl, type, source) {
   }
 
   return shader;
+}
+
+function collisionDetection(obsObj) {
+  for (var i in obsObj.positions) {
+    if(i % 3 == 2)
+      if (obsObj.positions[i] - cam_position[2] < 1.0 && obsObj.positions[i] - cam_position[2] > -1.0) {
+        if (Math.cos(obsRotation) < 0.7)
+          return 1;
+      }
+  }
 }
