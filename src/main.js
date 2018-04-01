@@ -85,7 +85,6 @@ function main() {
   const regular_texture = loadTexture(gl, 'assets/texture1.png');
   const grey_texture = loadTexture(gl, 'assets/texture2.png');
   var then = 0;
-  // isGrey = 0;
   // Draw the scene repeatedly
   function render(now) {
     now *= 0.001;  // convert to seconds
@@ -101,6 +100,12 @@ function main() {
     }
     if(!isFlash && flashVal>0.7) {
       flashVal -= 0.01;
+    }
+    // console.log(then);
+    if(cam_position>138) {
+      // cam_position = 0.0;
+      // console.log(cam_position);
+      cam_position = 0.0;
     }
     gl.uniform1f(programInfo.uniformLocations.vColor, flashVal)
     if(!isGrey) {
