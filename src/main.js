@@ -18,7 +18,8 @@ function main() {
   const gl = canvas.getContext('webgl');
 
   // If we don't have a GL context, give up now
-
+  var flashVal = 0.7;
+  var isFlash = 0;
   if (!gl) {
     alert('Unable to initialize WebGL. Your browser or machine may not support it.');
     return;
@@ -32,7 +33,7 @@ function main() {
 
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
-
+    uniform highp float vColor;
     varying highp vec2 vTextureCoord;
 
     void main(void) {
@@ -45,18 +46,17 @@ function main() {
 
   const fsSource = `
     varying highp vec2 vTextureCoord;
-
+    uniform highp float vColor;
     uniform sampler2D uSampler;
 
     void main(void) {
-      gl_FragColor = texture2D(uSampler, vTextureCoord);
+      gl_FragColor = texture2D(uSampler, vTextureCoord) * vColor;
     }
   `;
 
   // Initialize a shader program; this is where all the lighting
   // for the vertices and so forth is established.
   const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
-
   // Collect all the info needed to use the shader program.
   // Look up which attributes our shader program is using
   // for aVertexPosition, aTextureCoord and also
@@ -71,6 +71,7 @@ function main() {
       projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
       modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
       uSampler: gl.getUniformLocation(shaderProgram, 'uSampler'),
+      vColor: gl.getUniformLocation(shaderProgram, 'vColor'),
     },
   };
 
@@ -90,6 +91,18 @@ function main() {
     now *= 0.001;  // convert to seconds
     const deltaTime = now - then;
     then = now;
+    if(then>5 && then <5.5) {
+      isFlash = 1;
+    } else {
+      isFlash = 0;
+    }
+    if(isFlash && flashVal<1) {
+      flashVal += 0.01;
+    }
+    if(!isFlash && flashVal>0.7) {
+      flashVal -= 0.01;
+    }
+    gl.uniform1f(programInfo.uniformLocations.vColor, flashVal)
     if(!isGrey) {
       drawScene(gl, programInfo, buffers, regular_texture, deltaTime);
     } else {
@@ -226,7 +239,7 @@ function drawScene(gl, programInfo, buffers, texture, deltaTime) {
   // Clear the canvas before we start drawing on it.
 
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  console.log(buffers);
+  // console.log(buffers);
   // Create a perspective matrix, a special matrix that is
   // used to simulate the distortion of perspective in a camera.
   // Our field of view is 45 degrees, with a width/height
@@ -327,7 +340,9 @@ function drawScene(gl, programInfo, buffers, texture, deltaTime) {
         programInfo.uniformLocations.modelViewMatrix,
         false,
         modelViewMatrix);
-
+      //   var colorLocation = programInfo.uniformLocations.vColor;
+      // var yourColor = [1,0,1,1];
+      // gl.vertexAttrib4fv( colorLocation, yourColor );
     // Specify the texture to map onto the faces.
 
     // Tell WebGL we want to affect texture unit 0
@@ -338,6 +353,7 @@ function drawScene(gl, programInfo, buffers, texture, deltaTime) {
 
     // Tell the shader we bound the texture to texture unit 0
     gl.uniform1i(programInfo.uniformLocations.uSampler, 0);
+    // gl.uniform1f(programInfo.uniformLocations.vColor, 1)
 
     {
       const vertexCount = buffers[k].vertexCount;
